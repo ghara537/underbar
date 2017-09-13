@@ -194,23 +194,65 @@
   _.contains = function(collection, target) {
     // TIP: Many iteration problems can be most easily expressed in
     // terms of reduce(). Here's a freebie to demonstrate!
-    return _.reduce(collection, function(wasFound, item) {
-      if (wasFound) {
-        return true;
-      }
-      return item === target;
-    }, false);
+    if (Array.isArray(collection)) {
+      return _.reduce(collection, function(wasFound, item) {
+        if (wasFound) {
+          return true;
+        }
+        return item === target;
+      }, false);
+    }
+    else if (typeof collection === 'object') {
+      var wasFound = false;
+      _.each(collection, function(value, keys) {
+        if (target === collection[keys]){
+          wasFound = true;
+        }
+      })
+      return wasFound;
+    }
+    else {
+       return false;
+    };
   };
 
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
-    // TIP: Try re-using reduce() here.
+    if (iterator === undefined){
+      return _.reduce(collection, function(allTrue, value) {
+        if (!(value) === true ) {
+          allTrue = false;
+        }
+        //console.log(allTrue);
+        return allTrue;
+      }, true);
+    }
+    else {
+      return _.reduce(collection, function(allTrue, value) {
+        if (!iterator(value) === true ) {
+          allTrue = false;
+        }
+        //console.log(allTrue);
+        return allTrue;
+      }, true);
+      // TIP: Try re-using reduce() here.
+    }
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
+    if (iterator === undefined){
+      return !_.every(collection, function(value) {
+        return !value;
+      })
+    }
+    else {
+      return !_.every(collection, function(value) {
+        return !iterator(value);
+      })
+    }
     // TIP: There's a very clever way to re-use every() here.
   };
 
@@ -233,12 +275,36 @@
   //   }, {
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
-  _.extend = function(obj) {
+  _.extend = function(obj, ...theArgs) {
+    //theArgs refers to obj2, obj3
+    for (var argIndex = 0; argIndex < theArgs.length; argIndex++){
+      //keysToAdd refers to keys in obj2, obj3
+      var keysToAdd = Object.keys(theArgs[argIndex]);
+        //keysToAdd[keyIndex] refers to one key in obj2, obj3
+        //need value of object
+        for (var keyIndex = 0; keyIndex < keysToAdd.length; keyIndex++) {
+           //obj[key] = value
+           //theArgs[argIndex] = obj2
+           //obj2[keysToAdd[keyIndex]] = value
+           //[keysToAdd[keyIndex]] = key
+           obj[keysToAdd[keyIndex]] = theArgs[argIndex][keysToAdd[keyIndex]];
+      }
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
-  _.defaults = function(obj) {
+  _.defaults = function(obj, ...theArgs) {
+      for (var argIndex = 0; argIndex < theArgs.length; argIndex++){
+      var keysToAdd = Object.keys(theArgs[argIndex]);
+        for (var keyIndex = 0; keyIndex < keysToAdd.length; keyIndex++) {
+          if (obj[keysToAdd[keyIndex]] === undefined) {
+            obj[keysToAdd[keyIndex]] = theArgs[argIndex][keysToAdd[keyIndex]];
+          }
+        }
+      }
+      return obj;
   };
 
 
@@ -282,6 +348,18 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var argObjs;
+    console.log('arguments ' + arguments);
+    
+    return function() {
+        if(argObjs[arguments] === undefined) { 
+          result = func.apply(this, arguments);
+          argObjs[arguments] = result;
+        }
+        else {
+          return argObjs[arguments] = result;
+        }
+    }
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -290,7 +368,12 @@
   // The arguments for the original function are passed after the wait
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
-  _.delay = function(func, wait) {
+  _.delay = function(func, wait, ...theArgs) {
+    //for (var cycles = 0; cycles < wait; cycles++) {
+    //}
+    //console.log(theArgs);
+    setTimeout(func, wait, theArgs);
+    return;
   };
 
 
@@ -305,6 +388,24 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var oldArray = array.slice();
+    var numOfElements = oldArray.length;
+    var shuffledArray = [];
+    for (var sArraySize = 0; sArraySize < numOfElements; sArraySize++ ) {
+      var randomIndex = getRandomInt(oldArray.length-1,0);
+      shuffledArray.push(oldArray[randomIndex]);
+      var oldArray1 = oldArray.slice(0,randomIndex)
+      var oldArray2 = oldArray.slice(randomIndex+1,oldArray.length)
+      oldArray = oldArray1.concat(oldArray2);
+    }
+    return shuffledArray;
+
+
+    function getRandomInt(max, min) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random()*(max - min + 1)) + min;
+    }
   };
 
 
