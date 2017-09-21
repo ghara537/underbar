@@ -348,6 +348,8 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    
+/*
     var argObjs;
     console.log('arguments ' + arguments);
     
@@ -360,6 +362,30 @@
           return argObjs[arguments] = result;
         }
     }
+  */
+
+  
+  
+  console.log('arguments ' + arguments);
+  console.log('func');
+    var argsSeen = {};
+    return function () {
+      var key = JSON.stringify(arguments);
+      if (argsSeen.hasOwnProperty(key)){
+      	return argsSeen.key;
+      }
+      else {
+      	var firstSolve = func.apply(this, arguments);
+      	argsSeen[key] = firstSolve;
+      	return firstSolve;
+      }
+
+    }
+
+
+//once is not allowing the function to be called with tdifferent arguments
+
+
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -372,8 +398,12 @@
     //for (var cycles = 0; cycles < wait; cycles++) {
     //}
     //console.log(theArgs);
-    setTimeout(func, wait, theArgs);
-    return;
+
+    //setTimeout((function () {}), wait);
+    return setTimeout( function() {
+    	return func.apply(this, theArgs)
+    }, wait);
+
   };
 
 
